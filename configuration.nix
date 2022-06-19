@@ -35,8 +35,8 @@
   services.xserver.enable = true;
 
   # Enable the KDE Plasma Desktop Environment.
-  services.xserver.displayManager.lightdm.enable = true;
-  services.xserver.desktopManager.pantheon.enable = true;
+  services.xserver.displayManager.sddm.enable = true;
+  services.xserver.desktopManager.plasma5.enable = true;
 
   # Configure keymap in X11
   services.xserver = {
@@ -61,6 +61,9 @@
   ];
   # Force radv
   environment.variables.AMD_VULKAN_ICD = "RADV";
+
+  # Enable bluetooth
+  hardware.bluetooth.enable = true;
 
   # Enable flatpak
   services.flatpak.enable = true;
@@ -103,6 +106,7 @@
   environment.systemPackages = with pkgs; [
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   #  wget
+    kate
     firefox
     libreoffice
   ];
