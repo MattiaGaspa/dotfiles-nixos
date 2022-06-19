@@ -49,7 +49,7 @@
 
   # Allow auto upgrades
   system.autoUpgrade.enable = true;
-  system.autoUpgrade.allowReboot = true;
+  # system.autoUpgrade.allowReboot = true;
 
   # Enable hardware acceleration
   hardware.opengl.extraPackages = [
