@@ -13,7 +13,7 @@
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.efi.efiSysMountPoint = "/boot/efi";
+  boot.loader.efi.efiSysMountPoint = "/boot";
 
   # Set the zen kernel as default.
   boot.kernelPackages = pkgs.linuxPackages_zen;
@@ -32,7 +32,7 @@
   time.timeZone = "Europe/Rome";
 
   # Select internationalisation properties.
-  i18n.defaultLocale = "it_IT.utf8";
+  i18n.defaultLocale = "it_IT.UTF-8";
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
@@ -111,9 +111,10 @@
     wget
     kate
     firefox-wayland
+    chromium
     libreoffice
     vlc
-    krita
+    qemu
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
