@@ -13,7 +13,7 @@
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.efi.efiSysMountPoint = "/boot";
+  boot.loader.efi.efiSysMountPoint = "/boot/efi";
 
   # Set the zen kernel as default.
   boot.kernelPackages = pkgs.linuxPackages_zen;
