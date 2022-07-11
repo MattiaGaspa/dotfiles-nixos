@@ -99,6 +99,18 @@
     isNormalUser = true;
     description = "Mattia Gasparotto";
     extraGroups = [ "libinput" "networkmanager" "video" "wheel" ];
+    packages = with pkgs; [
+      chromium
+      firefox-wayland
+      kate
+      keepassxc
+      libreoffice
+      qemu
+      thunderbird
+      vim
+      vlc
+      wget
+    ];
   };
 
   # Allow unfree packages
@@ -107,15 +119,17 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-    wget
-    kate
-    firefox-wayland
-    chromium
-    libreoffice
-    vlc
-    qemu
+  #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+  #  wget
   ];
+
+  # Install Steam
+  programs.steam = {
+    enable = true;
+    remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
+    dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
+  };
+
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -138,9 +152,10 @@
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
-  # on your system were taken. It‘s perfectly fine and recommended to leavecatenate(variables, "bootdev", bootdev)
+  # on your system were taken. It‘s perfectly fine and recommended to leave
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "22.05"; # Did you read the comment?
+
 }
