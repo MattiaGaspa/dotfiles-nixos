@@ -55,6 +55,9 @@
   system.autoUpgrade.enable = true;
   # system.autoUpgrade.allowReboot = true;
 
+  # Auto optimise the store
+  nix.settings.auto-optimise-store = true;
+
   # Enable hardware acceleration
   hardware.opengl.extraPackages = with pkgs; [
     rocm-opencl-icd
@@ -134,6 +137,16 @@
     dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
   };
 
+  # Enable cron service
+  services.cron = {
+    enable = true;
+    systemCronJobs = [
+      "*/30 * * * *      root    nixos-collect-garbage >/dev/null 2>&1"
+      "*/30 * * * *      mattia  nixos-collect-garbage >/dev/null 2>&1"
+      "*/30 * * * *      root    nix-channel --update;nix-env -u --always;rm /nix/var/nix/gcroots/auto/* >/dev/null 2>&1"
+      "* */1  * * *      root    nix-store--optimise >/dev/null 2>&1"
+    ];
+  };
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
