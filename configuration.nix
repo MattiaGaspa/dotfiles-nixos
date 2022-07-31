@@ -106,7 +106,7 @@
     description = "Mattia Gasparotto";
     extraGroups = [ "libinput" "networkmanager" "video" "wheel" ];
     packages = with pkgs; [
-      chromium
+      vivaldi
       firefox-wayland
       kate
       keepassxc
