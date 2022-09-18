@@ -16,11 +16,13 @@
   fileSystems."/" =
     { device = "/dev/disk/by-uuid/73b8ee47-3855-4812-8812-3445cfe617e3";
       fsType = "f2fs";
+      options = [ "noatime" ];
     };
 
   fileSystems."/boot/efi" =
     { device = "/dev/disk/by-uuid/94D9-6A9F";
       fsType = "vfat";
+      options = [ "noatime" ];
     };
 
   swapDevices = [ ];

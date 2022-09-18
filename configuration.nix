@@ -48,6 +48,9 @@
     xkbVariant = "";
   };
 
+  # Enable docker
+  virtualisation.docker.enable = true;
+
   # Configure console keymap
   console.keyMap = "it2";
 
@@ -106,9 +109,11 @@
   users.users.mattia = {
     isNormalUser = true;
     description = "Mattia Gasparotto";
-    extraGroups = [ "libinput" "networkmanager" "video" "wheel" ];
+    extraGroups = [ "docker" "libinput" "networkmanager" "video" "wheel" ];
     packages = with pkgs; [
-      vivaldi
+      cheat
+      pkgs.jetbrains.idea-community
+      franz
       firefox-wayland
       kate
       keepassxc
@@ -119,6 +124,12 @@
       vlc
       wget
     ];
+  };
+  
+  # Enable flakes
+  nix = {
+    package = pkgs.nixFlakes;
+    extraOptions = "experimental-features = nix-command flakes";
   };
 
   # Allow unfree packages
