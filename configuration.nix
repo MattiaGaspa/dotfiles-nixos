@@ -6,17 +6,33 @@
 
 {
   imports =
-    [ # Include the results of the hardware scan.
+    [
       ./hardware-configuration.nix
     ];
 
-  # Bootloader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.efi.efiSysMountPoint = "/boot/efi";
+  # Boot options
+  boot = {
+    kernelPackages = pkgs.linuxPackages_zen; # Use the zen flavour of the kernel
+    
+    # Bootloader options
+    loader = {
+       systemd-boot.enable = false; # Disable systemd-boot
+       
+       # Grub options
+       grub = {
+         enable = true; # Use GRUB instead
+         useOSProber = true; # With OSProber
+         efiSupport = true; # And EFI
+         device = "nodev";
+       };
 
-  # Set the zen kernel as default.
-  boot.kernelPackages = pkgs.linuxPackages_zen;
+       # Efi options
+       efi = {
+         canTouchEfiVariables = true;
+         efiSysMountPoint = "/boot/efi"; # EFI partition mountpoint
+       };
+    };
+  };
 
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -34,6 +50,18 @@
   # Select internationalisation properties.
   i18n.defaultLocale = "it_IT.UTF-8";
 
+  i18n.extraLocaleSettings = {
+    LC_ADDRESS = "it_IT.UTF-8";
+    LC_IDENTIFICATION = "it_IT.UTF-8";
+    LC_MEASUREMENT = "it_IT.UTF-8";
+    LC_MONETARY = "it_IT.UTF-8";
+    LC_NAME = "it_IT.UTF-8";
+    LC_NUMERIC = "it_IT.UTF-8";
+    LC_PAPER = "it_IT.UTF-8";
+    LC_TELEPHONE = "it_IT.UTF-8";
+    LC_TIME = "it_IT.UTF-8";
+  };
+
   # Enable the X11 windowing system.
   services.xserver.enable = true;
   services.xserver.videoDrivers = [ "amdgpu" ];
@@ -42,48 +70,43 @@
   services.xserver.displayManager.sddm.enable = true;
   services.xserver.desktopManager.plasma5.enable = true;
 
+  # Enable hardware acceleration
+  systemd.tmpfiles.rules = [
+    "L+    /opt/rocm/hip   -    -    -     -    ${pkgs.hip}"
+  ];
+  hardware.opengl.extraPackages = with pkgs; [
+    rocm-opencl-icd
+    rocm-opencl-runtime
+    amdvlk
+  ];
+  # For 32 bit applications 
+  # Only available on unstable
+  hardware.opengl.extraPackages32 = with pkgs; [
+    driversi686Linux.amdvlk
+  ];
+
+
   # Configure keymap in X11
   services.xserver = {
     layout = "it";
     xkbVariant = "";
   };
 
-  # Enable docker
-  virtualisation.docker.enable = true;
-
-  # Configure console keymap
-  console.keyMap = "it2";
-
-  # Allow auto upgrades
-  system.autoUpgrade.enable = true;
-  # system.autoUpgrade.allowReboot = true;
-
-  # Auto optimise the store
-  nix.settings.auto-optimise-store = true;
-
-  # Enable hardware acceleration
-  hardware.opengl.extraPackages = with pkgs; [
-    rocm-opencl-icd
-    rocm-opencl-runtime
-    amdvlk
-  ];
-  hardware.opengl.extraPackages32 = with pkgs; [
-    driversi686Linux.amdvlk
-  ];
-  # Force RADV
-  environment.variables.AMD_VULKAN_ICD = "RADV";
-
-  hardware.opengl.driSupport = true;
-  hardware.opengl.driSupport32Bit = true;
-
   # Enable bluetooth
   hardware.bluetooth.enable = true;
 
-  # Enable flatpak
+  # Enable flatpak support
   services.flatpak.enable = true;
 
-  # Enable CUPS to print documents.
-  # services.printing.enable = true;
+  # Install Steam
+  programs.steam = {
+    enable = true;
+    remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
+    dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
+  };
+
+  # Configure console keymap
+  console.keyMap = "it2";
 
   # Enable sound with pipewire.
   sound.enable = true;
@@ -109,57 +132,20 @@
   users.users.mattia = {
     isNormalUser = true;
     description = "Mattia Gasparotto";
-    extraGroups = [ "docker" "libinput" "networkmanager" "video" "wheel" ];
+    extraGroups = [ "networkmanager" "video" "wheel" ];
     packages = with pkgs; [
-      cheat
-      pkgs.jetbrains.idea-community
-      franz
-      firefox-wayland
+      firefox
       kate
-      keepassxc
-      libreoffice
-      qemu
       thunderbird
-      vim
-      vlc
-      wget
     ];
   };
-  
-  # Enable flakes
-  nix = {
-    package = pkgs.nixFlakes;
-    extraOptions = "experimental-features = nix-command flakes";
-  };
-
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    wineWowPackages.staging
-  #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   #  wget
   ];
-
-  # Install Steam
-  programs.steam = {
-    enable = true;
-    remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
-    dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
-  };
-
-  # Enable cron service
-  services.cron = {
-    enable = true;
-    systemCronJobs = [
-      "*/30 * * * *      root    nixos-collect-garbage >/dev/null 2>&1"
-      "*/30 * * * *      mattia  nixos-collect-garbage >/dev/null 2>&1"
-      "*/30 * * * *      root    nix-channel --update;nix-env -u --always;rm /nix/var/nix/gcroots/auto/* >/dev/null 2>&1"
-      "* */1  * * *      root    nix-store--optimise >/dev/null 2>&1"
-    ];
-  };
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -180,12 +166,37 @@
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
 
-  # This value determines the NixOS release from which the default
-  # settings for stateful data, like file locations and database versions
-  # on your system were taken. It‘s perfectly fine and recommended to leave
-  # this value at the release version of the first install of this system.
-  # Before changing this value read the documentation for this option
-  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "22.05"; # Did you read the comment?
 
+  nix = {
+    settings ={
+      auto-optimise-store = true;
+    };
+    gc = {
+      automatic = true;
+      dates = "daily";
+      options = "--delete-older-than 2d";
+    };
+    package = pkgs.nixVersions.unstable;    # Enable nixFlakes on system
+    #             registry.nixpkgs.flake = inputs.nixpkgs;
+    extraOptions = ''
+      experimental-features = nix-command flakes
+      keep-outputs          = true
+      keep-derivations      = true
+    '';
+  };
+  nixpkgs.config.allowUnfree = true;        # Allow proprietary software.
+
+  system = {                                # NixOS settings
+    # autoUpgrade = {                         # Allow auto update (not useful in flakes)
+    #   enable = true;
+    #   channel = "https://nixos.org/channels/nixos-unstable";
+    # };
+    # This value determines the NixOS release from which the default
+    # settings for stateful data, like file locations and database versions
+    # on your system were taken. It‘s perfectly fine and recommended to leave
+    # this value at the release version of the first install of this system.
+    # Before changing this value read the documentation for this option
+    # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
+    stateVersion = "22.11";
+  };
 }
