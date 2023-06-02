@@ -1,7 +1,3 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
-
 { config, pkgs, ... }:
 
 {
@@ -34,41 +30,79 @@
     };
   };
 
-  networking.hostName = "nixos"; # Define your hostname.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+  networking = {
+    # Define your hostname
+    hostName = "nixos";
+    # Define nameservers
+    nameservers = [ "192.168.178.41"  "1.1.1.1" "8.8.8.8" ];
+    
+    # Use networkmanager
+    networkmanager.enable = true;
+    
+    # Disable rpfilter to route all traffic through the wireguard tunnel (too lazy to adapt rpfilter)
+    firewall.checkReversePath = false;
+  };
+  
+  services = {
+    # Xorg options
+    xserver = {
+      enable = true;
+      videoDrivers = [ "amdgpu" ]; # Use amd drivers
+      libinput.enable = true;
 
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
+      layout = "it"; # Use it keyboard
+      xkbVariant = ""; # Enable touchpad support (enabled default in most desktopManager)
 
-  # Enable networking
-  networking.networkmanager.enable = true;
+      # DisplayManager options
+      displayManager.sddm.enable = true; # Use sddm display manager
+      desktopManager.plasma5.enable = true; # Use plasma desktop
+    };
 
-  # Set your time zone.
+    # Pipewire options
+    pipewire = {
+      enable = true;
+      
+      alsa.enable = true;
+      alsa.support32Bit = true;
+      
+      pulse.enable = true;
+      jack.enable = true;
+    };
+    
+    # Enable flatpak support
+    flatpak.enable = true;
+
+    # Disable printer support
+    printing.enable = false;
+
+    # Enable tlp and auto-cpufreq
+    # tlp.enable = true;
+    # power-profiles-daemon.enable = false; # Needed because conflict with tlp
+    auto-cpufreq.enable = true;
+    
+    # For Samba
+    gvfs.enable = true;
+  };
+
+  # Set time zone.
   time.timeZone = "Europe/Rome";
 
   # Select internationalisation properties.
-  i18n.defaultLocale = "it_IT.UTF-8";
-
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "it_IT.UTF-8";
-    LC_IDENTIFICATION = "it_IT.UTF-8";
-    LC_MEASUREMENT = "it_IT.UTF-8";
-    LC_MONETARY = "it_IT.UTF-8";
-    LC_NAME = "it_IT.UTF-8";
-    LC_NUMERIC = "it_IT.UTF-8";
-    LC_PAPER = "it_IT.UTF-8";
-    LC_TELEPHONE = "it_IT.UTF-8";
-    LC_TIME = "it_IT.UTF-8";
+  i18n = {
+    # Set locale settings
+    defaultLocale = "it_IT.UTF-8";
+    extraLocaleSettings = {
+      LC_ADDRESS = "it_IT.UTF-8";
+      LC_IDENTIFICATION = "it_IT.UTF-8";
+      LC_MEASUREMENT = "it_IT.UTF-8";
+      LC_MONETARY = "it_IT.UTF-8";
+      LC_NAME = "it_IT.UTF-8";
+      LC_NUMERIC = "it_IT.UTF-8";
+      LC_PAPER = "it_IT.UTF-8";
+      LC_TELEPHONE = "it_IT.UTF-8";
+      LC_TIME = "it_IT.UTF-8";
+    };
   };
-
-  # Enable the X11 windowing system.
-  services.xserver.enable = true;
-  services.xserver.videoDrivers = [ "amdgpu" ];
-
-  # Enable the KDE Plasma Desktop Environment.
-  services.xserver.displayManager.sddm.enable = true;
-  services.xserver.desktopManager.plasma5.enable = true;
 
   # Enable hardware acceleration
   systemd.tmpfiles.rules = [
@@ -85,18 +119,8 @@
     driversi686Linux.amdvlk
   ];
 
-
-  # Configure keymap in X11
-  services.xserver = {
-    layout = "it";
-    xkbVariant = "";
-  };
-
   # Enable bluetooth
   hardware.bluetooth.enable = true;
-
-  # Enable flatpak support
-  services.flatpak.enable = true;
 
   # Install Steam
   programs.steam = {
@@ -112,27 +136,12 @@
   sound.enable = true;
   hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-    # If you want to use JACK applications, uncomment this
-    #jack.enable = true;
 
-    # use the example session manager (no others are packaged yet so this is enabled by default,
-    # no need to redefine it in your config for now)
-    #media-session.enable = true;
-  };
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  services.xserver.libinput.enable = true;
-
-  # Define a user account. Don't forget to set a password with ‘passwd’.
+  # Define a mattia's account
   users.users.mattia = {
     isNormalUser = true;
     description = "Mattia Gasparotto";
-    extraGroups = [ "networkmanager" "video" "wheel" ];
+    extraGroups = [ "audio" "networkmanager" "video" "wheel" ];
     packages = with pkgs; [
       firefox
       kate
@@ -143,8 +152,7 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-  #  wget
+    vim
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -155,18 +163,13 @@
   #   enableSSHSupport = true;
   # };
 
-  # List services that you want to enable:
-
-  # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
-
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
 
-
+  # Nix package manager configuration
   nix = {
     settings ={
       auto-optimise-store = true;
@@ -186,11 +189,61 @@
   };
   nixpkgs.config.allowUnfree = true;        # Allow proprietary software.
 
+  # Setup configuration files in /etc
+  environment.etc = {
+    # Auto-cpufreq
+    "auto-cpufreq.conf".text = ''
+      # settings for when connected to a power source
+      [charger]
+      # see available governors by running: cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors
+      # preferred governor.
+      governor = performance
+
+      # minimum cpu frequency (in kHz)
+      # example: for 800 MHz = 800000 kHz --> scaling_min_freq = 800000
+      # see conversion info: https://www.rapidtables.com/convert/frequency/mhz-to-hz.html
+      # to use this feature, uncomment the following line and set the value accordingly
+      # scaling_min_freq = 800000
+
+      # maximum cpu frequency (in kHz)
+      # example: for 1GHz = 1000 MHz = 1000000 kHz -> scaling_max_freq = 1000000
+      # see conversion info: https://www.rapidtables.com/convert/frequency/mhz-to-hz.html
+      # to use this feature, uncomment the following line and set the value accordingly
+      # scaling_max_freq = 1000000
+
+      # turbo boost setting. possible values: always, auto, never
+      turbo = auto
+
+      # settings for when using battery power
+      [battery]
+      # see available governors by running: cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors
+      # preferred governor
+      governor = powersave
+
+      # minimum cpu frequency (in kHz)
+      # example: for 800 MHz = 800000 kHz --> scaling_min_freq = 800000
+      # see conversion info: https://www.rapidtables.com/convert/frequency/mhz-to-hz.html
+      # to use this feature, uncomment the following line and set the value accordingly
+      # scaling_min_freq = 800000
+
+      # maximum cpu frequency (in kHz)
+      # see conversion info: https://www.rapidtables.com/convert/frequency/mhz-to-hz.html
+      # example: for 1GHz = 1000 MHz = 1000000 kHz -> scaling_max_freq = 1000000
+      # to use this feature, uncomment the following line and set the value accordingly
+      # scaling_max_freq = 1000000
+
+      # turbo boost setting. possible values: always, auto, never
+      turbo = auto
+    '';
+  };
+
+  # Do not touch
   system = {                                # NixOS settings
     # autoUpgrade = {                         # Allow auto update (not useful in flakes)
     #   enable = true;
     #   channel = "https://nixos.org/channels/nixos-unstable";
     # };
+    
     # This value determines the NixOS release from which the default
     # settings for stateful data, like file locations and database versions
     # on your system were taken. It‘s perfectly fine and recommended to leave
