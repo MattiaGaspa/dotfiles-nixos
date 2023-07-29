@@ -34,7 +34,7 @@
     # Define your hostname
     hostName = "nixos";
     # Define nameservers
-    nameservers = [ "192.168.178.41"  "1.1.1.1" "8.8.8.8" ];
+    nameservers = [ "192.168.178.41" "1.1.1.1" "8.8.8.8" ];
     
     # Use networkmanager
     networkmanager.enable = true;
